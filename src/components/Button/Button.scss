@@ -1,0 +1,21 @@
+button {
+	margin-top: 10px;
+	font-family: "Fredoka", sans-serif;
+	font-weight: bold;
+	background: #00d5ff;
+	color: #000;
+	border: 2px solid #000;
+	border-radius: 999px;
+	padding: 6px 12px;
+	cursor: pointer;
+	box-shadow: 2px 2px 0 #000;
+	transition: transform 0.1s ease;
+
+	&:hover {
+		transform: scale(1.05);
+	}
+
+	&:active {
+		transform: scale(0.95);
+	}
+}

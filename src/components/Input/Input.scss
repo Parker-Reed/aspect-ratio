@@ -1,0 +1,17 @@
+input {
+	font-family: "Fredoka", sans-serif;
+	background: #ffffff;
+	color: #000;
+	border: 3px solid #000;
+	border-radius: 12px;
+	padding: 10px 15px;
+	width: 100px;
+	font-size: 1rem;
+	text-align: center;
+	box-shadow: 3px 3px 0 #00d5ff;
+
+	&:focus {
+		outline: none;
+		border-color: #ff5c5c;
+	}
+}
