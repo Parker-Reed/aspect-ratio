@@ -5,19 +5,22 @@ export default function Input({
 	label,
 	value,
 	onChange,
-	unit = "px",
 	placeholder,
+	prefixLabel,
 }) {
 	return (
 		<div className='input-wrapper'>
 			{label && <label>{label}</label>}
-			<input
-				type='number'
-				placeholder={placeholder}
-				value={value}
-				onChange={onChange}
-			/>
-			<span className='unit-label'>{unit}</span>
+			<div className='input-container'>
+				{prefixLabel && <span className='prefix-label'>{prefixLabel}</span>}
+				{prefixLabel && <span className='divider' />}
+				<input
+					type='number'
+					placeholder={placeholder}
+					value={value}
+					onChange={onChange}
+				/>
+			</div>
 		</div>
 	);
 }

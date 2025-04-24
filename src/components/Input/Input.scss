@@ -15,3 +15,50 @@ input {
 		border-color: #ff5c5c;
 	}
 }
+
+.input-wrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+
+	.input-container {
+		display: flex;
+		align-items: center;
+		border: 3px solid #000;
+		border-radius: 12px;
+		box-shadow: 3px 3px 0 #00d5ff;
+		background: #fff;
+		padding: 0 10px;
+
+		input {
+			font-family: "Fredoka", sans-serif;
+			background: transparent;
+			color: #000;
+			border: none;
+			font-size: 1rem;
+
+			text-align: center;
+			appearance: auto;
+			box-shadow: none;
+		}
+
+		.prefix-label {
+			font-weight: 600;
+			margin-right: 6px;
+			color: #000;
+		}
+
+		.unit-label {
+			font-weight: 500;
+			margin-left: 6px;
+		}
+
+		.divider {
+			width: 1px;
+			height: 24px;
+			background-color: #c0c0c0;
+			margin: 0 8px;
+		}
+	}
+}
