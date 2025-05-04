@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import "./AspectRatioCalculator.scss";
-import Dropdown from "./Dropdown/Dropdown";
-import Input from "./Input/Input";
+import "@fontsource/fredoka";
 import Button from "./Button/Button";
-import Radio from "./Radio/Radio";
 import Checkbox from "./Checkbox/Checkbox";
+import Dropdown from "./Dropdown/Dropdown";
 import Header from "./Header/Header";
 import ImageUploader from "./ImageUploader/ImageUploader";
-import "@fontsource/fredoka";
+import Input from "./Input/Input";
+import Radio from "./Radio/Radio";
+import { useEffect, useState } from "react";
+import "./AspectRatioCalculator.scss";
 
 const aspectRatioOptions = [
 	{
@@ -42,32 +42,45 @@ const aspectRatioOptions = [
 	},
 ];
 
+const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+const formatValue = (val, rounded) => (rounded ? val.toFixed(2) : val);
+const convertValue = (value, unit) => {
+	if (unit === "px") return value;
+	if (unit === "rem") return (value / 16).toFixed(2);
+	if (unit === "em") return (value / 16).toFixed(2);
+	return value;
+};
+
 export default function AspectRatioCalculator() {
+	// Dimension state
 	const [width, setWidth] = useState(16);
 	const [height, setHeight] = useState(9);
 	const [ratio, setRatio] = useState("");
-
-	const [exportFormat, setExportFormat] = useState("css");
-	const [overlayImage, setOverlayImage] = useState(null);
-
-	const [unit] = useState("px");
 	const [preset, setPreset] = useState("16:9");
-	const [rounded] = useState(false);
+
+	// Aspect ratio locking
 	const [lockRatio, setLockRatio] = useState(false);
 	const [lockedAspectRatio, setLockedAspectRatio] = useState(null);
+
+	// Export and display options
+	const [exportFormat, setExportFormat] = useState("css");
+	const [unit] = useState("px");
+	const [rounded] = useState(false);
+
+	// Image overlay
+	const [overlayImage, setOverlayImage] = useState(null);
 	const [imageFit, setImageFit] = useState("contain");
 
+	// UI state
 	const [copied, setCopied] = useState(false);
-
-	const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
-	const formatValue = (val) => (rounded ? val.toFixed(2) : val);
 
 	useEffect(() => {
 		if (width && height) {
 			const divisor = gcd(width, height);
-			const ratioStr = `${formatValue(width / divisor)} : ${formatValue(
-				height / divisor
-			)}`;
+			const ratioStr = `${formatValue(
+				width / divisor,
+				rounded
+			)} : ${formatValue(height / divisor, rounded)}`;
 			setRatio(ratioStr);
 		} else {
 			setRatio("");
@@ -86,11 +99,54 @@ export default function AspectRatioCalculator() {
 		position: "relative",
 	};
 
-	const convertValue = (value) => {
-		if (unit === "px") return value;
-		if (unit === "rem") return (value / 16).toFixed(2);
-		if (unit === "em") return (value / 16).toFixed(2);
-		return value;
+	const handlePresetChange = (e) => {
+		const selected = e.target.value;
+		setPreset(selected);
+		const [w, h] = selected.split(":").map(Number);
+		if (!lockRatio) {
+			setWidth(w);
+			setHeight(h);
+		} else if (lockedAspectRatio) {
+			const newWidth = Math.round(h * lockedAspectRatio);
+			setWidth(newWidth);
+			setHeight(h);
+		}
+	};
+
+	const handleSwapDimensions = () => {
+		setWidth(height);
+		setHeight(width);
+		if (lockRatio) {
+			setLockedAspectRatio(height / width);
+		}
+	};
+
+	const handleWidthChange = (e) => {
+		setPreset("");
+		const newWidth = parseInt(e.target.value, 10) || 0;
+		if (lockRatio && lockedAspectRatio) {
+			const newHeight = Math.round(newWidth / lockedAspectRatio);
+			setHeight(newHeight);
+		}
+		setWidth(newWidth);
+	};
+
+	const handleHeightChange = (e) => {
+		setPreset("");
+		const newHeight = parseInt(e.target.value, 10) || 0;
+		if (lockRatio && lockedAspectRatio) {
+			const newWidth = Math.round(newHeight * lockedAspectRatio);
+			setWidth(newWidth);
+		}
+		setHeight(newHeight);
+	};
+
+	const handleLockToggle = () => {
+		const nextLock = !lockRatio;
+		setLockRatio(nextLock);
+		if (nextLock && width > 0 && height > 0) {
+			setLockedAspectRatio(width / height);
+		}
 	};
 
 	const handleReset = () => {
@@ -133,35 +189,14 @@ export default function AspectRatioCalculator() {
 					<Dropdown
 						label='select a common aspect ratio:'
 						value={preset}
-						onChange={(e) => {
-							const selected = e.target.value;
-							setPreset(selected);
-							const [w, h] = selected.split(":").map(Number);
-							if (!lockRatio) {
-								setWidth(w);
-								setHeight(h);
-							} else if (lockedAspectRatio) {
-								const newWidth = Math.round(h * lockedAspectRatio);
-								setWidth(newWidth);
-								setHeight(h);
-							}
-						}}
+						onChange={handlePresetChange}
 						options={aspectRatioOptions}
 					/>
 					<div className='flex-container'>
 						<div className='container'>
 							<div className='custom-width'>
 								<label>Enter your own width and height:</label>
-								<div
-									className='swap-icon'
-									onClick={() => {
-										setWidth(height);
-										setHeight(width);
-										if (lockRatio) {
-											setLockedAspectRatio(height / width);
-										}
-									}}
-								>
+								<div className='swap-icon' onClick={handleSwapDimensions}>
 									<svg
 										viewBox='0 0 24 24'
 										fill='none'
@@ -170,7 +205,7 @@ export default function AspectRatioCalculator() {
 										<path
 											d='M6 19L3 16M3 16L6 13M3 16H11C12.6569 16 14 14.6569 14 13V12M10 12V11C10 9.34315 11.3431 8 13 8H21M21 8L18 11M21 8L18 5'
 											stroke='#000000'
-											strokeWidth='1.44'
+											strokeWidth='2'
 											strokeLinecap='round'
 											strokeLinejoin='round'
 										/>
@@ -182,48 +217,22 @@ export default function AspectRatioCalculator() {
 									placeholder='Width'
 									unit={unit}
 									prefixLabel='W:'
-									value={convertValue(width)}
-									onChange={(e) => {
-										setPreset("");
-										const newWidth = parseInt(e.target.value, 10) || 0;
-										if (lockRatio && lockedAspectRatio) {
-											const newHeight = Math.round(
-												newWidth / lockedAspectRatio
-											);
-											setHeight(newHeight);
-										}
-										setWidth(newWidth);
-									}}
+									value={convertValue(width, unit)}
+									onChange={handleWidthChange}
 								/>
 								<Input
 									placeholder='Height'
 									unit={unit}
 									prefixLabel='H:'
-									value={convertValue(height)}
-									onChange={(e) => {
-										setPreset("");
-										const newHeight = parseInt(e.target.value, 10) || 0;
-										if (lockRatio && lockedAspectRatio) {
-											const newWidth = Math.round(
-												newHeight * lockedAspectRatio
-											);
-											setWidth(newWidth);
-										}
-										setHeight(newHeight);
-									}}
+									value={convertValue(height, unit)}
+									onChange={handleHeightChange}
 								/>
 							</div>
 						</div>
 						<Checkbox
 							label='Lock Aspect Ratio'
 							checked={lockRatio}
-							onChange={() => {
-								const nextLock = !lockRatio;
-								setLockRatio(nextLock);
-								if (nextLock && width > 0 && height > 0) {
-									setLockedAspectRatio(width / height);
-								}
-							}}
+							onChange={handleLockToggle}
 						/>
 					</div>
 				</div>
