@@ -22,6 +22,10 @@
 		position: relative;
 		padding: 0;
 		margin: 0;
+		height: calc(100vh - 1rem);
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
 
 		.aspect-ratio-calculator {
 			position: relative;
@@ -68,6 +72,63 @@
 			@media (min-width: 1440px) {
 				padding: 64px;
 				margin: 80px auto;
+			}
+		}
+
+		.footer {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			padding: 1rem;
+			gap: 4px;
+			font-size: 0.825rem;
+			color: #909090;
+
+			a {
+				cursor: pointer;
+				font-weight: 600;
+				text-decoration: none;
+				color: #ff5c5c;
+				position: relative;
+				display: inline-block;
+
+				&::after {
+					content: "";
+					position: absolute;
+					left: 0;
+					bottom: 0;
+					width: 100%;
+					height: 2px;
+					background-color: currentColor;
+					transform: scaleX(0);
+					transform-origin: left;
+					transition: transform 0.3s ease;
+				}
+
+				&:hover::after {
+					transform: scaleX(1);
+					transform-origin: left;
+				}
+
+				&:not(:hover)::after {
+					transform-origin: right;
+				}
+			}
+
+			@media (min-width: 1024px) {
+				padding: 0;
+			}
+			.wolf {
+				position: fixed;
+				bottom: -100%;
+				right: 32px;
+				transition: bottom 0.4s ease;
+				z-index: 999;
+			}
+			@media (min-width: 1024px) {
+				a:hover ~ .wolf {
+					bottom: -100px;
+				}
 			}
 		}
 	}
