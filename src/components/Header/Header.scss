@@ -1,0 +1,47 @@
+.header {
+	display: flex;
+	padding: 0rem 0.5rem;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.25rem;
+	align-self: stretch;
+
+	.title {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		h1 {
+			display: flex;
+			padding: 0.5rem 1rem;
+			align-items: center;
+
+			border-radius: 12px;
+			width: fit-content;
+			margin: 0;
+
+			overflow: hidden;
+			color: #fff;
+			text-overflow: ellipsis;
+			font-family: Rubik;
+			font-size: 1.5rem;
+			font-style: normal;
+			font-weight: 700;
+			line-height: 150%;
+
+			border-radius: 0.625rem;
+			background: #ff5c5c;
+			border: 3px solid #000;
+			box-shadow: 3px 3px 0px 0px #000;
+		}
+		h2 {
+			color: #747474;
+			font-family: Rubik;
+			font-size: 1rem;
+			font-style: normal;
+			font-weight: 400;
+			line-height: 125%;
+			margin: 0;
+		}
+	}
+}

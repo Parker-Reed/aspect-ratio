@@ -3,8 +3,44 @@ import "./AspectRatioCalculator.scss";
 import Dropdown from "./Dropdown/Dropdown";
 import Input from "./Input/Input";
 import Button from "./Button/Button";
+import Radio from "./Radio/Radio";
+import Checkbox from "./Checkbox/Checkbox";
+import Header from "./Header/Header";
 import ImageUploader from "./ImageUploader/ImageUploader";
 import "@fontsource/fredoka";
+
+const aspectRatioOptions = [
+	{
+		optgroup: true,
+		label: "Square",
+		options: [{ value: "1:1", label: "1:1 (Square)" }],
+	},
+	{
+		optgroup: true,
+		label: "Standard",
+		options: [
+			{ value: "4:3", label: "4:3" },
+			{ value: "3:2", label: "3:2" },
+			{ value: "5:4", label: "5:4" },
+			{ value: "6:5", label: "6:5" },
+			{ value: "7:5", label: "7:5" },
+		],
+	},
+	{
+		optgroup: true,
+		label: "Widescreen",
+		options: [
+			{ value: "16:9", label: "16:9" },
+			{ value: "2:1", label: "2:1" },
+			{ value: "21:9", label: "21:9" },
+		],
+	},
+	{
+		optgroup: true,
+		label: "Golden",
+		options: [{ value: "1.618:1", label: "1.618:1 (Golden Ratio)" }],
+	},
+];
 
 export default function AspectRatioCalculator() {
 	const [width, setWidth] = useState(16);
@@ -15,10 +51,11 @@ export default function AspectRatioCalculator() {
 	const [overlayImage, setOverlayImage] = useState(null);
 
 	const [unit] = useState("px");
-	const [preset, setPreset] = useState("");
+	const [preset, setPreset] = useState("16:9");
 	const [rounded] = useState(false);
 	const [lockRatio, setLockRatio] = useState(false);
 	const [lockedAspectRatio, setLockedAspectRatio] = useState(null);
+	const [imageFit, setImageFit] = useState("contain");
 
 	const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
 	const formatValue = (val) => (rounded ? val.toFixed(2) : val);
@@ -58,13 +95,19 @@ export default function AspectRatioCalculator() {
 		setWidth(16);
 		setHeight(9);
 		setOverlayImage(null);
-		setPreset("");
+		setPreset("16:9");
 	};
 
 	const getCodeSnippet = () => {
 		switch (exportFormat) {
-			case "css":
-				return `.aspect-box {\n  aspect-ratio: ${width} / ${height};\n}`;
+			case "css": {
+				const base = `.aspect-box {\n  aspect-ratio: ${width} / ${height};\n}`;
+				const fallback = `.aspect-box {\n  position: relative;\n}\n.aspect-box::before {\n  content: "";\n  display: block;\n  padding-top: ${(
+					(height / width) *
+					100
+				).toFixed(2)}%;\n}`;
+				return `${base}\n\n${fallback}`;
+			}
 			case "tailwind":
 				return `class="aspect-[${width}/${height}]"`;
 			case "inline":
@@ -80,132 +123,142 @@ export default function AspectRatioCalculator() {
 		}
 	};
 
-	const getFallbackSnippet = () => {
-		const ratioPercent = ((height / width) * 100).toFixed(2);
-		return `.aspect-box {\n  position: relative;\n}\n.aspect-box::before {\n  content: "";\n  display: block;\n  padding-top: ${ratioPercent}%;\n}`;
-	};
-
 	return (
 		<div className='aspect-ratio-calculator'>
-			<div className='header'>
-				<div className='title'>
-					<h1>Ratio Wizard</h1>
-					<h2>Aspect Ratio Calculator</h2>
-				</div>
-				<Button onClick={handleReset}>Reset</Button>
-			</div>
+			<Header handleReset={handleReset} />
 			<div className='main-container'>
-				<div className='controls'>
-					<div className='tool-container'>
-						<div className='inputs'>
-							<Input
-								placeholder='Width'
-								unit={unit}
-								prefixLabel='W:'
-								value={convertValue(width)}
-								onChange={(e) => {
-									const newWidth = parseInt(e.target.value, 10) || 0;
-									if (lockRatio && lockedAspectRatio) {
-										const newHeight = Math.round(newWidth / lockedAspectRatio);
-										setHeight(newHeight);
-									}
-									setWidth(newWidth);
-								}}
-							/>
-							<Input
-								placeholder='Height'
-								unit={unit}
-								prefixLabel='H:'
-								value={convertValue(height)}
-								onChange={(e) => {
-									const newHeight = parseInt(e.target.value, 10) || 0;
-									if (lockRatio && lockedAspectRatio) {
-										const newWidth = Math.round(newHeight * lockedAspectRatio);
-										setWidth(newWidth);
-									}
-									setHeight(newHeight);
-								}}
-							/>
-						</div>
-						<div className='input checkbox-input'>
-							<label>
-								<input
-									type='checkbox'
-									checked={lockRatio}
-									onChange={() => {
-										const nextLock = !lockRatio;
-										setLockRatio(nextLock);
-										if (nextLock && width > 0 && height > 0) {
-											setLockedAspectRatio(width / height);
+				<div className='box' id='1'>
+					<Dropdown
+						label='select a common aspect ratio:'
+						value={preset}
+						onChange={(e) => {
+							const selected = e.target.value;
+							setPreset(selected);
+							const [w, h] = selected.split(":").map(Number);
+							if (!lockRatio) {
+								setWidth(w);
+								setHeight(h);
+							} else if (lockedAspectRatio) {
+								const newWidth = Math.round(h * lockedAspectRatio);
+								setWidth(newWidth);
+								setHeight(h);
+							}
+						}}
+						options={aspectRatioOptions}
+					/>
+					<div className='flex-container'>
+						<div className='container'>
+							<label>Enter your own width and height:</label>
+							<div className='input-selection'>
+								<Input
+									placeholder='Width'
+									unit={unit}
+									prefixLabel='W:'
+									value={convertValue(width)}
+									onChange={(e) => {
+										setPreset("");
+										const newWidth = parseInt(e.target.value, 10) || 0;
+										if (lockRatio && lockedAspectRatio) {
+											const newHeight = Math.round(
+												newWidth / lockedAspectRatio
+											);
+											setHeight(newHeight);
 										}
+										setWidth(newWidth);
 									}}
 								/>
-								<span>Lock Aspect Ratio</span>
-							</label>
-						</div>
-					</div>
-					<div className='code-container'>
-						<div className='code-output'>
-							<div className='format-select'>
-								<Dropdown
-									value={exportFormat}
-									onChange={(e) => setExportFormat(e.target.value)}
-									options={[
-										{ value: "css", label: "CSS" },
-										{ value: "tailwind", label: "Tailwind" },
-										{ value: "inline", label: "Inline Styles" },
-										{ value: "jsx", label: "JSX" },
-										{ value: "scss", label: "SCSS Mixin" },
-										{ value: "react-native", label: "React Native" },
-									]}
+								<Input
+									placeholder='Height'
+									unit={unit}
+									prefixLabel='H:'
+									value={convertValue(height)}
+									onChange={(e) => {
+										setPreset("");
+										const newHeight = parseInt(e.target.value, 10) || 0;
+										if (lockRatio && lockedAspectRatio) {
+											const newWidth = Math.round(
+												newHeight * lockedAspectRatio
+											);
+											setWidth(newWidth);
+										}
+										setHeight(newHeight);
+									}}
 								/>
 							</div>
-							<pre>
-								<code>{getCodeSnippet()}</code>
-							</pre>
-							<Button
-								onClick={() => navigator.clipboard.writeText(getCodeSnippet())}
-							>
-								Copy {exportFormat.toUpperCase()}
-							</Button>
 						</div>
-						{exportFormat === "css" && (
-							<div className='code-output'>
-								<h3>CSS Fallback</h3>
-								<pre>
-									<code>{getFallbackSnippet()}</code>
-								</pre>
-								<Button
-									onClick={() =>
-										navigator.clipboard.writeText(getFallbackSnippet())
-									}
-								>
-									Copy Fallback
-								</Button>
-							</div>
-						)}
+						<Checkbox
+							label='Lock Aspect Ratio'
+							checked={lockRatio}
+							onChange={() => {
+								const nextLock = !lockRatio;
+								setLockRatio(nextLock);
+								if (nextLock && width > 0 && height > 0) {
+									setLockedAspectRatio(width / height);
+								}
+							}}
+						/>
 					</div>
 				</div>
-				<div className='grid-container'>
-					{ratio && <p className='ratio'>Ratio: {ratio}</p>}
+				<div className='box' id='2'>
+					<div className='code-container'>
+						<Dropdown
+							value={exportFormat}
+							onChange={(e) => setExportFormat(e.target.value)}
+							options={[
+								{ value: "css", label: "CSS" },
+								{ value: "tailwind", label: "Tailwind" },
+								{ value: "inline", label: "Inline Styles" },
+								{ value: "jsx", label: "JSX" },
+								{ value: "scss", label: "SCSS Mixin" },
+								{ value: "react-native", label: "React Native" },
+							]}
+						/>
+
+						<pre>
+							<code>{getCodeSnippet()}</code>
+						</pre>
+						<Button
+							onClick={() => navigator.clipboard.writeText(getCodeSnippet())}
+							className='secondary'
+						>
+							Copy {exportFormat.toUpperCase()}
+						</Button>
+					</div>
+				</div>
+				<div className='box' id='3'>
+					<div className='title'>
+						<p className='label'>Example:</p>
+						<ImageUploader onUpload={setOverlayImage} />
+					</div>
 					<div className='visual-container'>
 						<div className='visual-representation' style={boxStyle}>
+							<span>{ratio}</span>
 							{overlayImage && (
 								<img
 									src={overlayImage}
 									alt='Overlay'
-									style={{
-										width: "100%",
-										height: "100%",
-										objectFit: "cover",
-										borderRadius: "12px",
-									}}
+									style={{ objectFit: imageFit }}
 								/>
 							)}
-							<span>{ratio}</span>
 						</div>
 					</div>
-					<ImageUploader onUpload={setOverlayImage} />
+					{overlayImage && (
+						<div className='fit-options'>
+							<label>Image Fit:</label>
+							<Radio
+								label='Contain'
+								value='contain'
+								checked={imageFit === "contain"}
+								onChange={(e) => setImageFit(e.target.value)}
+							/>
+							<Radio
+								label='Cover'
+								value='cover'
+								checked={imageFit === "cover"}
+								onChange={(e) => setImageFit(e.target.value)}
+							/>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

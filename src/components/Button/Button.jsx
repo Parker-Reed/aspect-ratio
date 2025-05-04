@@ -1,9 +1,9 @@
 import React from "react";
 import "./Button.scss";
 
-export default function Button({ onClick, children }) {
+export default function Button({ onClick, children, className }) {
 	return (
-		<button className='retro-button' onClick={onClick}>
+		<button className={className} onClick={onClick}>
 			{children}
 		</button>
 	);

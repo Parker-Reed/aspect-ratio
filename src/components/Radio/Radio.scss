@@ -1,0 +1,57 @@
+.radio {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	font-weight: 500;
+	color: #000;
+	font-family: Rubik;
+	font-size: 0.875rem;
+	font-style: normal;
+	font-weight: 400;
+
+	input[type="radio"] {
+		appearance: none;
+		width: 24px;
+		height: 24px;
+		border: 3px solid #000;
+		border-radius: 100px;
+		background-color: #fff;
+		position: relative;
+		outline: none;
+		cursor: pointer;
+		box-shadow: 0 3px 0 #00d5ff;
+		padding: 10px;
+
+		&:checked::before {
+			content: "";
+			position: absolute;
+			top: 4px;
+			left: 4px;
+			width: 12px;
+			height: 12px;
+			background-color: #00d5ff;
+			border-radius: 100px;
+			animation: gooeyWiggle 300ms ease-out;
+		}
+	}
+
+	span {
+		font-size: 1rem;
+	}
+}
+
+@keyframes gooeyWiggle {
+	0% {
+		transform: scale(0) translate(0, 0);
+	}
+	30% {
+		transform: scale(1.2) translate(-2px, 2px);
+	}
+	60% {
+		transform: scale(0.95) translate(2px, -1px);
+	}
+	100% {
+		transform: scale(1) translate(0, 0);
+	}
+}
