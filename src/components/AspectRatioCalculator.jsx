@@ -57,6 +57,8 @@ export default function AspectRatioCalculator() {
 	const [lockedAspectRatio, setLockedAspectRatio] = useState(null);
 	const [imageFit, setImageFit] = useState("contain");
 
+	const [copied, setCopied] = useState(false);
+
 	const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
 	const formatValue = (val) => (rounded ? val.toFixed(2) : val);
 
@@ -72,7 +74,7 @@ export default function AspectRatioCalculator() {
 		}
 	}, [width, height, rounded]);
 
-	const MAX_DISPLAY_SIZE = 300;
+	const MAX_DISPLAY_SIZE = 400;
 	const boxWidth =
 		width > height ? MAX_DISPLAY_SIZE : (width / height) * MAX_DISPLAY_SIZE;
 	const boxHeight =
@@ -148,7 +150,33 @@ export default function AspectRatioCalculator() {
 					/>
 					<div className='flex-container'>
 						<div className='container'>
-							<label>Enter your own width and height:</label>
+							<div className='custom-width'>
+								<label>Enter your own width and height:</label>
+								<div
+									className='swap-icon'
+									onClick={() => {
+										setWidth(height);
+										setHeight(width);
+										if (lockRatio) {
+											setLockedAspectRatio(height / width);
+										}
+									}}
+								>
+									<svg
+										viewBox='0 0 24 24'
+										fill='none'
+										xmlns='http://www.w3.org/2000/svg'
+									>
+										<path
+											d='M6 19L3 16M3 16L6 13M3 16H11C12.6569 16 14 14.6569 14 13V12M10 12V11C10 9.34315 11.3431 8 13 8H21M21 8L18 11M21 8L18 5'
+											stroke='#000000'
+											strokeWidth='1.44'
+											strokeLinecap='round'
+											strokeLinejoin='round'
+										/>
+									</svg>
+								</div>
+							</div>
 							<div className='input-selection'>
 								<Input
 									placeholder='Width'
@@ -218,7 +246,11 @@ export default function AspectRatioCalculator() {
 							<code>{getCodeSnippet()}</code>
 						</pre>
 						<Button
-							onClick={() => navigator.clipboard.writeText(getCodeSnippet())}
+							onClick={() => {
+								navigator.clipboard.writeText(getCodeSnippet());
+								setCopied(true);
+								setTimeout(() => setCopied(false), 4000);
+							}}
 							className='secondary'
 						>
 							Copy {exportFormat.toUpperCase()}
@@ -226,10 +258,6 @@ export default function AspectRatioCalculator() {
 					</div>
 				</div>
 				<div className='box' id='3'>
-					<div className='title'>
-						<p className='label'>Example:</p>
-						<ImageUploader onUpload={setOverlayImage} />
-					</div>
 					<div className='visual-container'>
 						<div className='visual-representation' style={boxStyle}>
 							<span>{ratio}</span>
@@ -241,6 +269,10 @@ export default function AspectRatioCalculator() {
 								/>
 							)}
 						</div>
+					</div>
+					<div className='title'>
+						<p className='label'>Example:</p>
+						<ImageUploader onUpload={setOverlayImage} />
 					</div>
 					{overlayImage && (
 						<div className='fit-options'>
@@ -260,6 +292,7 @@ export default function AspectRatioCalculator() {
 						</div>
 					)}
 				</div>
+				{copied && <div className='copied-alert'>Copied!</div>}
 			</div>
 		</div>
 	);

@@ -9,7 +9,9 @@ export default function Header({ handleReset }) {
 				<h1>Ratio Wizard</h1>
 				<h2>Aspect Ratio Calculator</h2>
 			</div>
-			<Button onClick={handleReset}>Reset</Button>
+			<Button className='tertiary' onClick={handleReset}>
+				Reset
+			</Button>
 		</header>
 	);
 }

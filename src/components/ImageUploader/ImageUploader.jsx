@@ -30,7 +30,7 @@ export default function ImageUploader({ onUpload }) {
 			{preview ? (
 				<div className='preview'>
 					<img src={preview} alt='Uploaded preview' />
-					<Button className='secondary' onClick={clearImage}>
+					<Button className='close' onClick={clearImage}>
 						X
 					</Button>
 				</div>
